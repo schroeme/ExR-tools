@@ -3,12 +3,9 @@ Sets up the project parameters.
 """
 import os
 import pickle
-
-from nd2reader import ND2Reader
 from exr.io import createfolderstruc
-
-from exr.utils import configure_logger
-logger = configure_logger('ExSeq-Toolbox')
+from exr.utils import chmod, configure_logger
+logger = configure_logger('ExR-Tools')
 
 
 class Config:
@@ -16,48 +13,43 @@ class Config:
         pass
 
     def set_config(self,
-                project_path = '',
-                codes = list(range(10)),
-                fovs = None,
-                ref_code = 0,
-                thresholds = [200,300,300,200],
-                spacing = [1.625,1.625,4.0],
-                gene_digit_csv = 'gene_list.csv', #'/mp/nas3/ruihan/20230308_celegans/code0/gene_list.csv'
+                raw_data_path,
+                processed_data_path = None,
+                rounds = list(range(10)),
+                rois = None,
+                ref_round = 1, # TODO fix
+                spacing = [0.1625,0.1625,0.250],
+                channel_names = ['633','546','488'],
                 permission = False,
-                create_directroy_struc = False,
-                args_file_name = None,
+                create_directroy_struc = True,
+                config_file_name = 'exr_tools_config',
                 ):
         
-        self.project_path = project_path
-        self.codes = codes
-        self.thresholds = thresholds
+        self.raw_data_path = os.path.abspath(raw_data_path)
+        self.rounds = rounds
         self.spacing = spacing
         self.permission = permission
-        self.ref_code = ref_code
-        
-        # Housekeeping
-        self.code2num = {'a':'0','c':'1','g':'2','t':'3'}
-        self.colors = ['red','yellow','green','blue']
-        self.colorscales = ['Reds','Oranges','Greens','Blues']
-        self.channel_names = ['640','594','561','488','405']
+        self.ref_round = ref_round
+        self.channel_names = channel_names
         
         # Input ND2 path
         self.nd2_path = os.path.join(
-            self.project_path, "code{}/Channel{} SD_Seq000{}.nd2"
+            self.raw_data_path, "R{}","40x ROI{}.nd2"
         )
-        if not fovs and "fovs" not in dir(self):
-            self.fovs = list(
-                ND2Reader(self.nd2_path.format(self.ref_code, "405", 4)).metadata[
-                    "fields_of_view"
-                ]
-            )
+        
+        #TODO start files name at 0        
+        if not rois and "rois" not in dir(self):
+            self.rois = list(range(1,len(os.listdir(os.path.dirname(self.nd2_path.format(self.ref_round,1))))+1))
         else:
-            self.fovs = fovs
+            self.rois = list(range(1,rois+1))
 
         # Output h5 path
-        self.processed_path = os.path.join(self.project_path, "processed_ruihan")
-        self.h5_path = os.path.join(self.processed_path, "code{}/{}.h5")
-        self.tform_path = os.path.join(self.processed_path, "code{}/tforms/{}.txt")
+        if processed_data_path:
+            self.processed_data_path = os.path.abspath(processed_data_path)
+        else:
+            self.processed_data_path = os.path.join(self.raw_data_path, "processed_data")
+        
+        self.h5_path = os.path.join(self.processed_data_path, "R{}/{}.h5")
 
         # Housekeeping
         self.code2num = {"a": "0", "c": "1", "g": "2", "t": "3"}
@@ -65,21 +57,15 @@ class Config:
         self.colorscales = ["Reds", "Oranges", "Greens", "Blues"]
         self.channel_names = ["640", "594", "561", "488", "405"]
 
-        self.work_path = self.project_path + "puncta/"
-
-        self.gene_digit_csv = gene_digit_csv
-
         if create_directroy_struc:
-            createfolderstruc(project_path, codes)
+            createfolderstruc(self.processed_data_path, self.rounds)
 
-        if args_file_name == None:
-            args_file_name = 'args.pkl'
-
-        with open(os.path.join(self.project_path, args_file_name), "wb") as f:
+        with open(os.path.join(self.processed_data_path, config_file_name + '.pkl'), "wb") as f:
             pickle.dump(self.__dict__, f)
 
         if permission:
-            chmod(self.project_path)
+            chmod(self.raw_data_path)
+
 
 
     # load parameters from a pre-set .pkl file
@@ -92,6 +78,11 @@ class Config:
         with open(os.path.abspath(param_path), "rb") as f:
             self.__dict__.update(pickle.load(f))
 
+    def print(self):
+        r"""Prints all attributes.
+        """
+        for key, value in self.__dict__.items():
+            print(f"{key}: {value}")
 
 
 
