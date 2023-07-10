@@ -9,40 +9,26 @@ from nd2reader import ND2Reader
 
 from typing import Optional
 from exr.utils import configure_logger
-logger = configure_logger('ExSeq-Toolbox')
+logger = configure_logger('ExR-Tools')
 
 
-def createfolderstruc(out_dir, codes):
+def createfolderstruc(processed_dir, rounds):
     r"""Creates a results folder for the specified code.
 
     :param str outdir: the directory where all results for the specified code should be stored.
     :param list codes: the list of codes to create the folder structure for.
     """
 
-    processed_dir = os.path.join(out_dir, "processed/")
-    puncta_dir = os.path.join(out_dir, "puncta/")
-    puncta_inspect_dir = os.path.join(puncta_dir, "inspect_puncta/")
-
     if os.path.isdir(processed_dir) is False:
         os.makedirs(processed_dir)
 
-    if os.path.isdir(puncta_dir) is False:
-        os.makedirs(puncta_dir)
+    for round in rounds:
 
-    if os.path.isdir(puncta_inspect_dir) is False:
-        os.makedirs(puncta_inspect_dir)
+        round_path = os.path.join(processed_dir, "R{}".format(round))
 
-    for code in codes:
+        if os.path.isdir(round_path) is False:
+            os.makedirs(round_path)
 
-        code_path = os.path.join(processed_dir, "code{}".format(code))
-
-        if os.path.isdir(code_path) is False:
-            os.makedirs(code_path)
-
-        tform_dir = os.path.join(code_path, "tforms")
-
-        if os.path.isdir(tform_dir) is False:
-            os.makedirs(tform_dir)
 
 
 

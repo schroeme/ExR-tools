@@ -1,6 +1,6 @@
 import os
 from exr.utils.log import configure_logger
-logger = configure_logger('ExSeq-Toolbox')
+logger = configure_logger('ExR-Tools')
 
 
 def chmod(path):
