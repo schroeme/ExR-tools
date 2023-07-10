@@ -111,7 +111,7 @@ class Config:
     def set_permissions(self):
         r"""Changes permission of the raw_data_path to allow other users to read and write on the generated files."""
         try:
-            chmod(str(self.raw_data_path))
+            chmod(self.processed_data_path)
         except Exception as e:
             logger.error(f"Failed to set permissions. Error: {e}")
             raise
@@ -146,7 +146,8 @@ class Config:
     def print(self) -> None:
         r"""Prints all attributes of the Config object."""
         try:
-            print(str(self))
+            for key, value in self.__dict__.items():
+                print(f"{key}: {value}")
         except Exception as e:
             logger.error(f"Failed to print configuration. Error: {e}")
             raise
