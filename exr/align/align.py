@@ -13,6 +13,29 @@ from exr.utils import configure_logger
 logger = configure_logger('ExR-Tools')
 
 
+def transform_ref_round(config, roi):
+    r"""For each volume specified in code_fov_pairs, convert from an nd2 file to an array, then save into an .h5 file.
+
+    :param args.Args args: configuration options.
+    :param list code_fov_pairs: a list of tuples where each tuple is a (code, fov) pair. Default: ``None``
+    :param str mode: channels to run, should be one of ``all`` (all channels), `405` (just the reference channel) or `4` (all channels other than reference). Default: ``'all'``
+    """
+
+    logger.info(f"Transform ref round: Round:{config.ref_round},ROI:{roi}")
+
+    for channel_ind, channel in enumerate(config.channel_names):
+
+        ref_vol = nd2ToVol(config.nd2_path.format(
+            config.ref_round, roi), channel)
+
+        with h5py.File(config.h5_path.format(config.ref_round, roi), "a") as f:
+            if channel in f.keys():
+                del f[channel]
+            f.create_dataset(channel, ref_vol.shape,
+                             dtype=ref_vol.dtype, data=ref_vol)
+    
+
+
 def execute_volumetric_alignment(config: Config,
                                  tasks_queue: multiprocessing.Queue,
                                  q_lock: multiprocessing.Lock) -> None:
@@ -44,9 +67,13 @@ def execute_volumetric_alignment(config: Config,
             break
         else:
             try:
+
+                if round == config.ref_round:
+                    transform_ref_round(config,roi)
+
                 sitk.ProcessObject_SetGlobalWarningDisplay(False)
 
-                logger.info(f"aligning: round:{round},ROI:{roi}")
+                logger.info(f"Aligning: round:{round},ROI:{roi}")
 
                 fix_vol = nd2ToVol(config.nd2_path.format(
                     config.ref_round, roi), config.ref_channel)
@@ -190,10 +217,15 @@ def execute_volumetric_alignment_bigstream(config: Config,
             break
         else:
             try:
+                
+                if round == config.ref_round:
+                    transform_ref_round(config,roi)
+                    continue
+
                 from bigstream.align import alignment_pipeline
                 from bigstream.transform import apply_transform
 
-                logger.info(f"aligning: round:{round},ROI:{roi}")
+                logger.info(f"aligning: Round:{round},ROI:{roi}")
 
                 fix_vol = nd2ToVol(config.nd2_path.format(
                     config.ref_round, roi), config.ref_channel)
@@ -203,7 +235,7 @@ def execute_volumetric_alignment_bigstream(config: Config,
 
                 affine_kwargs = {
                     'alignment_spacing': 0.5,
-                    'shrink_factors': (10 ,8, 4, 2, 1),
+                    'shrink_factors': (10, 8, 4, 2, 1),
                     'smooth_sigmas': (8., 4., 4., 2., 1.),
                     'optimizer_args': {
                         'learningRate': 0.25,
@@ -248,6 +280,7 @@ def execute_volumetric_alignment_bigstream(config: Config,
 # TODO limit itk multithreading
 '''
 
+
 def volumetric_alignment(config: Config,
                          round_roi_pairs: Optional[List[Tuple[int, int]]] = None,
                          parallel_processes: int = 1,
@@ -278,7 +311,7 @@ def volumetric_alignment(config: Config,
 
     for w in range(int(parallel_processes)):
         try:
-            
+
             if method == 'bigstream':
                 p = multiprocessing.Process(
                     target=execute_volumetric_alignment_bigstream, args=(config, tasks_queue, q_lock))
@@ -286,12 +319,11 @@ def volumetric_alignment(config: Config,
                 p = multiprocessing.Process(
                     target=execute_volumetric_alignment, args=(config, tasks_queue, q_lock))
 
-
             child_processes.append(p)
             p.start()
         except Exception as e:
             logger.error(
-                f"Error starting process for round: {round}, ROI: {roi}, Error: {e}")
+                f"Error starting process for Round: {round}, ROI: {roi}, Error: {e}")
 
     for p in child_processes:
         p.join()
