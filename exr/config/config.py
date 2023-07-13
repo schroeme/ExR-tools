@@ -1,7 +1,6 @@
 import os
 import json
 import pathlib
-import logging
 from typing import List, Optional
 from exr.io import createfolderstruc
 from exr.utils import chmod, configure_logger
@@ -29,12 +28,12 @@ class Config:
                    processed_data_path: Optional[str] = None,
                    rounds: List[int] = list(range(10)),
                    rois: Optional[int] = None, 
-                   spacing: List[float] = [0.1625,0.1625,0.250],
-                   channel_names: List[str] = ['633','546','488'],
+                   spacing: List[float] = [0.250,0.1625,0.1625],
+                   channel_names: List[str] = ['640','561','488'],
                    ref_round: int = 1,
-                   ref_channel: str = '633',
-                   permission: Optional[bool] = None,
-                   create_directroy_structure: Optional[bool] = None,
+                   ref_channel: str = '640',
+                   permission: Optional[bool] = False,
+                   create_directroy_structure: Optional[bool] = True,
                    config_file_name: str = 'exr_tools_config',
                   ) -> None:
         r"""
@@ -64,7 +63,7 @@ class Config:
         :type config_file_name: str
         """
         try:
-            self.raw_data_path = pathlib.Path(raw_data_path).absolute()
+            self.raw_data_path = os.path.abspath(raw_data_path)
             self.rounds = rounds
             self.spacing = spacing
             self.ref_round = ref_round
@@ -72,21 +71,21 @@ class Config:
             self.channel_names = channel_names
 
             # Input ND2 path
-            self.nd2_path = self.raw_data_path / "R{}" / "40x ROI{}.nd2"
+            self.nd2_path = os.path.join(self.raw_data_path , "R{}" , "40x ROI{}.nd2")
 
             #TODO start files name at 0        
             if rois is None:
-                self.rois = list(range(1,len(list(self.nd2_path.parent.glob("*")))+1))
+                self.rois = list(range(1,len(os.listdir(os.path.dirname(self.nd2_path.format(self.ref_round,1))))+1))
             else:
                 self.rois = list(range(1,rois+1))
 
             # Output h5 path
             if processed_data_path is not None:
-                self.processed_data_path = pathlib.Path(processed_data_path).absolute()
+                self.processed_data_path = os.path.abspath(processed_data_path)
             else:
-                self.processed_data_path = self.raw_data_path / "processed_data"
+                self.processed_data_path = os.path.join(self.raw_data_path,"processed_data")
 
-            self.h5_path = self.processed_data_path / "R{}" / "{}.h5"
+            self.h5_path = os.path.join(self.processed_data_path , "R{}" , "ROI{}.h5")
 
             if create_directroy_structure is not None:
                 self.create_directroy_structure()
@@ -111,7 +110,7 @@ class Config:
     def set_permissions(self):
         r"""Changes permission of the raw_data_path to allow other users to read and write on the generated files."""
         try:
-            chmod(self.processed_data_path)
+            chmod(pathlib.Path(self.processed_data_path))
         except Exception as e:
             logger.error(f"Failed to set permissions. Error: {e}")
             raise
@@ -123,7 +122,7 @@ class Config:
         :type config_file_name: str
         """
         try:
-            with open(self.processed_data_path / (config_file_name + '.json'), "w") as f:
+            with open(os.path.join(self.processed_data_path , config_file_name + '.json'), "w") as f:
                 json.dump(self.__dict__, f, default=str)
         except Exception as e:
             logger.error(f"Failed to save configuration. Error: {e}")
@@ -136,7 +135,7 @@ class Config:
         :type config_file_name: str
         """
         try:
-            param_path = pathlib.Path(param_path).absolute()
+            param_path = os.path.abspath(param_path)
             with open(param_path, "r") as f:
                 self.__dict__.update(json.load(f))
         except Exception as e:
