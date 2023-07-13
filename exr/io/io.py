@@ -27,7 +27,7 @@ def createfolderstruc(processed_dir: Path, rounds: List[int]) -> None:
         round_path.mkdir(exist_ok=True)
 
 
-def nd2ToVol(filename: str, channel_name: str = '633', ratio: int = 1) -> Optional[np.ndarray]:
+def nd2ToVol(filename: str, channel_name: str = '640 SD', ratio: int = 1) -> Optional[np.ndarray]:
     """
     Generate a volume from ND2 file.
 
@@ -44,8 +44,10 @@ def nd2ToVol(filename: str, channel_name: str = '633', ratio: int = 1) -> Option
     try:
 
         vol = ND2Reader(filename)
-
-        channel_id = vol.metadata['channels'].index(channel_name)
+        channel_names = vol.metadata["channels"]
+        channel_id = [x for x in range(len(channel_names)) if channel_name in channel_names[x]]
+        assert len(channel_id) == 1
+        channel_id = channel_id[0]
 
         out = np.zeros([len(vol), vol[0].shape[0]//ratio,
                        vol[0].shape[1] // ratio], np.uint16)
