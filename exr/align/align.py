@@ -1,45 +1,66 @@
 """
 Code for volumetric alignment. For "thick" volumes (volumes that have more than 400 slices), use the alignment functions that end in "truncated".
 """
+
+
 import h5py
 import tempfile
 import queue
 import multiprocessing
 from typing import Tuple, Optional, List
+
 from exr.config import Config
 from exr.io import nd2ToVol
+from exr.utils import subtract_background_top_hat, subtract_background_rolling_ball
+
+from bigstream.transform import apply_transform
+from bigstream.align import affine_align
+
 from exr.utils import configure_logger
 
 logger = configure_logger('ExR-Tools')
 
 
-def transform_ref_round(config, roi):
-    r"""For each volume specified in code_fov_pairs, convert from an nd2 file to an array, then save into an .h5 file.
-
-    :param args.Args args: configuration options.
-    :param list code_fov_pairs: a list of tuples where each tuple is a (code, fov) pair. Default: ``None``
-    :param str mode: channels to run, should be one of ``all`` (all channels), `405` (just the reference channel) or `4` (all channels other than reference). Default: ``'all'``
+def transform_ref_round(config, roi, bg_sub):
+    r"""
+    :param config: Configuration options.
+    :type config: Config
+    :param roi: Region of interest.
+    :type roi: int
+    :param bg_sub: Specifies the background subtraction method to be used. 
+                   Can be "rolling_ball" or "top_hat". If not provided, no background 
+                   subtraction will be applied.
+    :type bg_sub: str, optional
     """
 
     logger.info(f"Transform ref round: Round:{config.ref_round},ROI:{roi}")
 
     for channel_ind, channel in enumerate(config.channel_names):
+        try:
+            ref_vol = nd2ToVol(config.nd2_path.format(
+                config.ref_round, roi), channel)
 
-        ref_vol = nd2ToVol(config.nd2_path.format(
-            config.ref_round, roi), channel)
+            if channel == config.ref_channel and bg_sub == 'rolling_ball':
+                ref_vol = subtract_background_rolling_ball(ref_vol)
 
-        with h5py.File(config.h5_path.format(config.ref_round, roi), "a") as f:
-            if channel in f.keys():
-                del f[channel]
-            f.create_dataset(channel, ref_vol.shape,
-                             dtype=ref_vol.dtype, data=ref_vol)
-    
+            if channel == config.ref_channel and bg_sub == 'top_hat':
+                ref_vol = subtract_background_top_hat(ref_vol)
+
+            with h5py.File(config.h5_path.format(config.ref_round, roi), "a") as f:
+                if channel in f.keys():
+                    del f[channel]
+                f.create_dataset(channel, ref_vol.shape,
+                                 dtype=ref_vol.dtype, data=ref_vol)
+        except Exception as e:
+            logger.error(
+                f"Error during transformation for  Ref Round, ROI: {roi}, Channel: {channel}, Error: {e}")
+            raise
 
 
 def execute_volumetric_alignment(config: Config,
                                  tasks_queue: multiprocessing.Queue,
                                  q_lock: multiprocessing.Lock) -> None:
-    """
+    r"""
     For each volume in code_fov_pairs, finds the corresponding reference volume and performs alignment.
 
     :param config: Configuration options.
@@ -69,7 +90,7 @@ def execute_volumetric_alignment(config: Config,
             try:
 
                 if round == config.ref_round:
-                    transform_ref_round(config,roi)
+                    transform_ref_round(config, roi)
 
                 sitk.ProcessObject_SetGlobalWarningDisplay(False)
 
@@ -191,7 +212,7 @@ def execute_volumetric_alignment(config: Config,
 def execute_volumetric_alignment_bigstream(config: Config,
                                            tasks_queue: multiprocessing.Queue,
                                            q_lock: multiprocessing.Lock) -> None:
-    """
+    r"""
     Executes volumetric alignment using BigStream for each round and ROI from the tasks queue.
 
     :param config: Configuration options. This should be an instance of the Config class.
@@ -206,7 +227,7 @@ def execute_volumetric_alignment_bigstream(config: Config,
 
         try:
             with q_lock:
-                round, roi = tasks_queue.get_nowait()
+                round, roi, bg_sub = tasks_queue.get_nowait()
                 logger.info(
                     f"Remaining tasks to process : {tasks_queue.qsize()}")
         except queue.Empty:
@@ -217,21 +238,29 @@ def execute_volumetric_alignment_bigstream(config: Config,
             break
         else:
             try:
-                
-                if round == config.ref_round:
-                    transform_ref_round(config,roi)
-                    continue
 
-                from bigstream.align import alignment_pipeline
-                from bigstream.transform import apply_transform
+                if round == config.ref_round:
+                    transform_ref_round(config, roi, bg_sub)
+                    continue
 
                 logger.info(f"aligning: Round:{round},ROI:{roi}")
 
-                fix_vol = nd2ToVol(config.nd2_path.format(
-                    config.ref_round, roi), config.ref_channel)
+                try:
+                    with h5py.File(config.h5_path.format(config.ref_round, roi), "r") as f:
+                        fix_vol = f[config.ref_channel][()]
+
+                except Exception as e:
+                    logger.error(
+                        f"The refrence round for ROI:{roi} is not processed yet, {e}")
 
                 mov_vol = nd2ToVol(config.nd2_path.format(
                     round, roi), config.ref_channel)
+
+                if bg_sub == "rolling_ball":
+                    mov_vol = subtract_background_rolling_ball(mov_vol)
+
+                if bg_sub == "top_hat":
+                    mov_vol = subtract_background_top_hat(mov_vol)
 
                 affine_kwargs = {
                     'alignment_spacing': 0.5,
@@ -244,14 +273,12 @@ def execute_volumetric_alignment_bigstream(config: Config,
                     },
                 }
 
-                steps = [('affine', affine_kwargs,),]
-
-                # align
-                affine = alignment_pipeline(
+                affine = affine_align(
                     fix_vol, mov_vol,
                     config.spacing, config.spacing,
-                    steps,
+                    **affine_kwargs,
                 )
+
                 for channel_ind, channel in enumerate(config.channel_names):
 
                     mov_vol = nd2ToVol(
@@ -284,7 +311,8 @@ def execute_volumetric_alignment_bigstream(config: Config,
 def volumetric_alignment(config: Config,
                          round_roi_pairs: Optional[List[Tuple[int, int]]] = None,
                          parallel_processes: int = 1,
-                         method: Optional[str] = None) -> None:
+                         method: Optional[str] = None,
+                         bg_sub: Optional[str] = '') -> None:
     r"""
     Parallel processing support for alignment function.
 
@@ -296,6 +324,10 @@ def volumetric_alignment(config: Config,
     :type parallel_processes: int, optional
     :param method: The method to use for alignment. If 'bigstream', uses the 'execute_volumetric_alignment_bigstream' function. Otherwise, uses the 'execute_volumetric_alignment' function.
     :type method: str, optional
+    :param bg_sub: Specifies the background subtraction method to be used. 
+                   Can be "rolling_ball" or "top_hat". If not provided, no background 
+                   subtraction will be applied.
+    :type bg_sub: str, optional
     """
 
     child_processes = []
@@ -307,7 +339,7 @@ def volumetric_alignment(config: Config,
                            for round_val in config.rounds for roi_val in config.rois]
 
     for round, roi in round_roi_pairs:
-        tasks_queue.put((round, roi))
+        tasks_queue.put((round, roi, bg_sub))
 
     for w in range(int(parallel_processes)):
         try:
@@ -327,3 +359,5 @@ def volumetric_alignment(config: Config,
 
     for p in child_processes:
         p.join()
+
+
