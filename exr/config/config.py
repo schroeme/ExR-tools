@@ -86,6 +86,7 @@ class Config:
                 self.processed_data_path = os.path.join(self.raw_data_path,"processed_data")
 
             self.h5_path = os.path.join(self.processed_data_path , "R{}" , "ROI{}.h5")
+            self.roi_analysis_path = os.path.join(self.processed_data_path,"roi_analysis")
 
             if create_directroy_structure is not None:
                 self.create_directroy_structure()
@@ -102,7 +103,7 @@ class Config:
     def create_directroy_structure(self):
         r"""Creates the directory structure in the specified project path."""
         try:
-            createfolderstruc(str(self.processed_data_path), self.rounds)
+            createfolderstruc(str(self.processed_data_path),self.rois, self.rounds)
         except Exception as e:
             logger.error(f"Failed to create directory structure. Error: {e}")
             raise
