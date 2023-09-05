@@ -153,7 +153,7 @@ def calculate_alignment_evaluation_ci(config: Config, roi: int,
     r"""
     Calculate the confidence interval (CI) for alignment evaluation and save it as a JSON file.
 
-    :param config: Configuration options.
+    :param config: Configuration options. This should be an instance of the Config class.
     :type config: Config
     :param roi: The ROI (Region Of Interest) for which alignment evaluation will be calculated.
     :type roi: int
