@@ -8,7 +8,7 @@ from exr.utils import configure_logger
 
 logger = configure_logger('ExR-Tools')
 
-def template_matching(T: np.ndarray, I: np.ndarray, IdataIn: Dict = None) -> np.ndarray:
+def template_matching(T: np.ndarray, I: np.ndarray, IdataIn: Dict = {}) -> np.ndarray:
     """
     Implements template matching between two images using Fourier transform.
 
@@ -61,7 +61,7 @@ def template_matching(T: np.ndarray, I: np.ndarray, IdataIn: Dict = None) -> np.
         Icorr = np.real(ifftn(FI * FT))
 
         # Calculate Local Quadratic sum of Image and Template
-        if IdataIn is None or 'LocalQSumI' not in IdataIn:
+        if 'LocalQSumI' not in IdataIn:
             Idata['LocalQSumI'] = local_sum(I * I, T_size)
         else:
             Idata['LocalQSumI'] = IdataIn['LocalQSumI']
