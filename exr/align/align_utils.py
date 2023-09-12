@@ -8,7 +8,7 @@ from exr.utils import configure_logger
 
 logger = configure_logger('ExR-Tools')
 
-def template_matching(T: np.ndarray, I: np.ndarray, IdataIn: Dict = None) -> np.ndarray:
+def template_matching(T: np.ndarray, I: np.ndarray, IdataIn: Dict = {}) -> np.ndarray:
     """
     Implements template matching between two images using Fourier transform.
 
@@ -61,7 +61,7 @@ def template_matching(T: np.ndarray, I: np.ndarray, IdataIn: Dict = None) -> np.
         Icorr = np.real(ifftn(FI * FT))
 
         # Calculate Local Quadratic sum of Image and Template
-        if IdataIn is None or 'LocalQSumI' not in IdataIn:
+        if 'LocalQSumI' not in IdataIn:
             Idata['LocalQSumI'] = local_sum(I * I, T_size)
         else:
             Idata['LocalQSumI'] = IdataIn['LocalQSumI']
@@ -110,7 +110,7 @@ def alignment_NCC(config: Config, vol1: np.ndarray, vol2: np.ndarray) -> List[fl
     r"""
     Measures the alignment of two images using Normalized Cross-Correlation (NCC). expected shape `[Z,Y,X]`
 
-    :param config: Configuration options.
+    :param config: Configuration options. This should be an instance of the Config class.
     :type config: Config
     :param vol1: The first volume (reference volume) for alignment comparison.
     :type vol1: np.ndarray

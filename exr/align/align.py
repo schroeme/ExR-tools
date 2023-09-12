@@ -23,7 +23,7 @@ logger = configure_logger('ExR-Tools')
 
 def transform_ref_round(config, roi, bg_sub):
     r"""
-    :param config: Configuration options.
+    :param config: Configuration options. This should be an instance of the Config class.
     :type config: Config
     :param roi: Region of interest.
     :type roi: int
@@ -63,7 +63,7 @@ def execute_volumetric_alignment(config: Config,
     r"""
     For each volume in code_fov_pairs, finds the corresponding reference volume and performs alignment.
 
-    :param config: Configuration options.
+    :param config: Configuration options. This should be an instance of the Config class.
     :type config: Config
     :param tasks_queue: A multiprocessing queue containing tasks.
     :type tasks_queue: multiprocessing.Queue
