@@ -10,8 +10,8 @@ from exr.utils import configure_logger
 logger = configure_logger('ExR-Tools')
 
 
-def createfolderstruc(processed_dir: Path, rounds: List[int]) -> None:
-    """
+def createfolderstruc(processed_dir: Path,rois:List[int], rounds: List[int]) -> None:
+    r"""
     Creates a results folder for the specified code.
 
     :param processed_dir: The directory where all results for the specified code should be stored.
@@ -22,13 +22,29 @@ def createfolderstruc(processed_dir: Path, rounds: List[int]) -> None:
     processed_dir = Path(processed_dir)
     processed_dir.mkdir(parents=True, exist_ok=True)
 
+    roi_analysis_dir = processed_dir/ "roi_analysis"
+    roi_analysis_dir.mkdir(parents=True, exist_ok=True)
+
+    roi_analysis = ['segmentation_masks']
+    for dir in roi_analysis:
+        roi_analysis_sub_dir = roi_analysis_dir / dir
+        roi_analysis_sub_dir.mkdir(parents=True, exist_ok=True)
+ 
     for round in rounds:
-        round_path = processed_dir / f"R{round}"
-        round_path.mkdir(exist_ok=True)
+        round_dir = processed_dir / f"R{round}"
+        round_dir.mkdir(exist_ok=True)
+
+    align_eval_dir = processed_dir / "alignment_evaluation"
+    align_eval_dir.mkdir(parents=True, exist_ok=True)
+
+    for roi in rois:
+        roi_dir = align_eval_dir / f"ROI{roi}"
+        roi_dir.mkdir(exist_ok=True)
+
 
 
 def nd2ToVol(filename: str, channel_name: str = '640 SD', ratio: int = 1) -> Optional[np.ndarray]:
-    """
+    r"""
     Generate a volume from ND2 file.
 
     :param filename: The name of the ND2 file.
