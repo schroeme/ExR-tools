@@ -10,7 +10,7 @@ from exr.utils import configure_logger
 logger = configure_logger('ExR-Tools')
 
 
-def createfolderstruc(processed_dir: Path,rois:List[int], rounds: List[int]) -> None:
+def create_folder_structure(processed_dir: Path,rois:List[int], rounds: List[int]) -> None:
     r"""
     Creates a results folder for the specified code.
 
