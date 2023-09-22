@@ -1,7 +1,7 @@
 """
 Functions to assist in project directory creation. 
 """
-
+import json
 import numpy as np
 from pathlib import Path
 from nd2reader import ND2Reader
@@ -25,7 +25,7 @@ def createfolderstruc(processed_dir: Path,rois:List[int], rounds: List[int]) -> 
     roi_analysis_dir = processed_dir/ "roi_analysis"
     roi_analysis_dir.mkdir(parents=True, exist_ok=True)
 
-    roi_analysis = ['segmentation_masks']
+    roi_analysis = ['segmentation_masks','synapses_properties']
     for dir in roi_analysis:
         roi_analysis_sub_dir = roi_analysis_dir / dir
         roi_analysis_sub_dir.mkdir(parents=True, exist_ok=True)
@@ -79,3 +79,36 @@ def nd2ToVol(filename: str, channel_name: str = '640 SD', ratio: int = 1) -> Opt
     except Exception as e:
         logger.error(f"Failed to generate volume from ND2 file. Error: {e}")
         return None
+
+
+def load_json(file_path):
+    r"""
+    Loads a JSON file from the specified path and returns the data.
+
+    :param file_path: The path to the JSON file to load.
+    :type file_path: str
+
+    :return: The data loaded from the JSON file or None if an error occurs.
+    :rtype: Union[Dict, None]
+    """
+    try:
+        with open(file_path, 'r') as json_file:
+            return json.load(json_file)
+    except Exception as e:
+        logger.error(f"Failed to load JSON from {file_path}: {e}")
+        return None
+
+def save_json(data, file_path):
+    r"""
+    Saves the provided data as a JSON file to the specified path.
+
+    :param data: The data to save as a JSON file.
+    :type data: Dict
+    :param file_path: The path where the JSON file should be saved.
+    :type file_path: str
+    """
+    try:
+        with open(file_path, 'w') as json_file:
+            json.dump(data, json_file, indent=4)
+    except Exception as e:
+        logger.error(f"Failed to save JSON to {file_path}: {e}")
