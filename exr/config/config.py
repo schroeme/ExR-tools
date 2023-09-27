@@ -2,7 +2,7 @@ import os
 import json
 import pathlib
 from typing import List, Optional
-from exr.io import createfolderstruc
+from exr.io import create_folder_structure
 from exr.utils import chmod, configure_logger
 
 logger = configure_logger('ExR-Tools')
@@ -103,7 +103,7 @@ class Config:
     def create_directroy_structure(self):
         r"""Creates the directory structure in the specified project path."""
         try:
-            createfolderstruc(str(self.processed_data_path),self.rois, self.rounds)
+            create_folder_structure(str(self.processed_data_path),self.rois, self.rounds)
         except Exception as e:
             logger.error(f"Failed to create directory structure. Error: {e}")
             raise

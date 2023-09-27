@@ -96,6 +96,70 @@ def subtract_background_top_hat(volume: np.ndarray,
         raise
 
 
+
+def calculate_volume_and_surface_area(labeled_image, label=1,spacing=[1,1,1]):
+    """
+    Calculate the volume and surface area of the object with the given label in the 3D labeled image.
+    
+    Parameters:
+        labeled_image (numpy.ndarray): 3D array where different objects are labeled with different integer values.
+        label (int): The label of the object for which to calculate volume and surface area.
+    
+    Returns:
+        tuple: (volume, surface_area)
+    """
+    # Initialize volume and surface_area
+    volume = 0
+    surface_area = 0
+    
+    # Define the directions to check for neighboring voxels
+    directions = [(0, 1, 0), (1, 0, 0), (0, -1, 0), (-1, 0, 0), (0, 0, 1), (0, 0, -1)]
+    
+    # Iterate over the 3D array
+    for z in range(labeled_image.shape[0]):
+        for y in range(labeled_image.shape[1]):
+            for x in range(labeled_image.shape[2]):
+                # If this voxel is part of the object
+                if labeled_image[z, y, x] == label:
+                    # Increment the volume
+                    volume += 1
+                    
+                    # Check the neighbors to calculate surface area
+                    for dx, dy, dz in directions:
+                        neighbor_x = x + dx
+                        neighbor_y = y + dy
+                        neighbor_z = z + dz
+                        
+                        # Check if the neighbor coordinates are within bounds
+                        if 0 <= neighbor_x < labeled_image.shape[2] and \
+                           0 <= neighbor_y < labeled_image.shape[1] and \
+                           0 <= neighbor_z < labeled_image.shape[0]:
+                            # If the neighbor is not part of the object, it's a boundary face
+                            if labeled_image[neighbor_z, neighbor_y, neighbor_x] != label:
+                                surface_area += 1
+                        else:
+                            # Edge of the image is also considered a boundary face
+                            surface_area += 1
+    
+    z_dim , y_dim , x_dim = spacing
+    physical_volume = volume * (z_dim * y_dim * x_dim)
+
+    avg_face_area = (y_dim * x_dim + z_dim * y_dim + z_dim * x_dim) / 3
+    # Calculate the physical surface area
+    physical_surface_area = surface_area * avg_face_area
+
+    return volume, surface_area, physical_volume, physical_surface_area
+
+
+
+
+
+
+
+
+
+
+
 # multiprocessing acclerated
 # def subtract_background_rolling_ball(volume_img, radius=50, num_threads=20):
 
