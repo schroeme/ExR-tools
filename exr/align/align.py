@@ -1,8 +1,3 @@
-"""
-Code for volumetric alignment. For "thick" volumes (volumes that have more than 400 slices), use the alignment functions that end in "truncated".
-"""
-
-
 import h5py
 import tempfile
 import queue

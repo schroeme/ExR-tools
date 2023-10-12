@@ -33,7 +33,7 @@ class Config:
                    ref_round: int = 1,
                    ref_channel: str = '640',
                    permission: Optional[bool] = False,
-                   create_directroy_structure: Optional[bool] = True,
+                   create_directory_structure: Optional[bool] = True,
                    config_file_name: str = 'exr_tools_config',
                   ) -> None:
         r"""
@@ -71,7 +71,7 @@ class Config:
             self.channel_names = channel_names
 
             # Input ND2 path
-            self.nd2_path = os.path.join(self.raw_data_path , "R{}" , "40x ROI{}.nd2")
+            self.nd2_path = os.path.join(self.raw_data_path , "R{}" , "ROI{}.nd2")
 
             #TODO start files name at 0        
             if rois is None:
@@ -88,8 +88,8 @@ class Config:
             self.h5_path = os.path.join(self.processed_data_path , "R{}" , "ROI{}.h5")
             self.roi_analysis_path = os.path.join(self.processed_data_path,"roi_analysis")
 
-            if create_directroy_structure is not None:
-                self.create_directroy_structure()
+            if create_directory_structure is not None:
+                self.create_directory_structure()
 
             if permission is not None:
                 self.set_permissions()
@@ -100,7 +100,7 @@ class Config:
             logger.error(f"Failed to set configuration. Error: {e}")
             raise
 
-    def create_directroy_structure(self):
+    def create_directory_structure(self):
         r"""Creates the directory structure in the specified project path."""
         try:
             create_folder_structure(str(self.processed_data_path),self.rois, self.rounds)
