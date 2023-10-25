@@ -1,5 +1,5 @@
 from exr.config.config import Config
-from exr.analysis.analysis import extract_synapse_coordinates, measure_synapse_properties  # Replace 'your_package_name' accordingly.
+from exr.analysis.analysis import extract_synapse_coordinates, measure_synapse_properties,measure_synapse_properties_pairwise
 
 # Step 1: Load Configuration Settings
 # ====================================
@@ -18,10 +18,10 @@ config.load_config(config_file_path)
 # ===========================================================
 
 # Define the list of ROI number for which coordinates will be extracted.
-roi_to_analyze = config.rois  # Adjust this based on your dataset for example [1,3].
+rois_to_analyze = config.rois  # Adjust this based on your dataset for example [1,3].
 
 # Extract the coordinates.
-for roi in roi_to_analyze:
+for roi in rois_to_analyze:
     extract_synapse_coordinates(config=config, roi=roi)
 
 # Note: Ensure that segmentation masks have been generated before this step.
@@ -96,10 +96,19 @@ config.xystep = 0.1625/40
 nonzero_pixel_threshold = 0.65
 
 # Execute the measurement of synapse properties.
-for roi in roi_to_analyze:
+for roi in rois_to_analyze:
     measure_synapse_properties(
         config=config,
-        roi=roi_to_analyze,
+        roi=roi,
+        round_channel_pairs=round_channel_pairs_to_analyze,
+        nonzero_threshold=nonzero_pixel_threshold
+    )
+
+# Execute the measurement of synapse pairwise properties.
+for roi in rois_to_analyze:
+    measure_synapse_properties_pairwise(
+        config=config,
+        roi=roi,
         round_channel_pairs=round_channel_pairs_to_analyze,
         nonzero_threshold=nonzero_pixel_threshold
     )
