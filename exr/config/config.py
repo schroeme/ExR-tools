@@ -124,7 +124,7 @@ class Config:
         """
         try:
             with open(os.path.join(self.processed_data_path , config_file_name + '.json'), "w") as f:
-                json.dump(self.__dict__, f, default=str)
+                json.dump(self.__dict__, f)
         except Exception as e:
             logger.error(f"Failed to save configuration. Error: {e}")
             raise
