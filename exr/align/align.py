@@ -2,6 +2,7 @@ import h5py
 import tempfile
 import queue
 import multiprocessing
+import numpy as np
 from typing import Tuple, Optional, List
 
 from exr.config import Config
@@ -270,7 +271,7 @@ def execute_volumetric_alignment_bigstream(config: Config,
 
                 affine = affine_align(
                     fix_vol, mov_vol,
-                    config.spacing, config.spacing,
+                    np.array(config.spacing), np.array(config.spacing),
                     **affine_kwargs,
                 )
 
@@ -282,7 +283,7 @@ def execute_volumetric_alignment_bigstream(config: Config,
                     # apply affine only
                     aligned_vol = apply_transform(
                         fix_vol, mov_vol,
-                        config.spacing, config.spacing,
+                        np.array(config.spacing), np.array(config.spacing),
                         transform_list=[affine,],
                     )
 

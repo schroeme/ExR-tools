@@ -69,7 +69,7 @@ config.set_config(
     processed_data_path=processed_data_directory,
     rounds=list(range(1, num_rounds+1)),
     rois=num_rois,
-    spacing=np.array(pixel_spacing),
+    spacing=pixel_spacing,
     channel_names=channel_names_list,
     ref_round=reference_round,
     ref_channel=reference_channel,
