@@ -1,3 +1,6 @@
+"""
+Sets up the project configration. 
+"""
 import os
 import json
 import pathlib
@@ -9,7 +12,19 @@ logger = configure_logger('ExR-Tools')
 
 class Config:
     r"""
-    A class used to represent the configuration for ExR Tools.
+    A class used to manage and represent the configuration for the ExR-Tools software.
+
+    This class handles the setup of paths, parameters, and project-specific settings. It also manages 
+    the creation of directory structures and file permissions as required. Configurations can be saved to 
+    or loaded from a JSON file for persistent use.
+
+    **Methods:**
+        - `set_config`: Configures various parameters for the ExR-Tools.
+        - `save_config`: Saves the current configuration to a JSON file.
+        - `load_config`: Loads configuration from a JSON file.
+        - `create_directory_structure`: Creates the necessary directory structure for the project.
+        - `set_permissions`: Modifies file permissions for the project directory.
+        - `print`: Outputs all current configuration attributes.
     """
     
     def __init__(self):

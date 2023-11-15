@@ -1,5 +1,5 @@
 """
-Functions to assist in project directory creation. 
+The IO module in the ExR Tools is designed to streamline the process of reading, converting, and managing image data files for expansion microscopy
 """
 import json
 import numpy as np

@@ -1,3 +1,6 @@
+"""
+The Segmentation Module employs image processing techniques to delineate synapses within volumetric datasets, with additional methods planned for future implementation. It includes tools for executing segmentation tasks and recording the coordinates of each identified synapse.
+"""
 import os
 import tifffile
 import h5py 
