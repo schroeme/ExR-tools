@@ -4,5 +4,5 @@ Segmentation Module
 Synapses Segmentation
 ------------------------
 
-.. automodule:: exm.segmentation.segmentation
+.. automodule:: exr.segmentation.segmentation
        :members:

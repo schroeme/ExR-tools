@@ -4,7 +4,7 @@ import datetime
 
 sys.path.insert(0, os.path.abspath("../.."))
 
-import exm
+import exr
 
 # import sphinx.domain.python
 import sphinx.ext.autosummary
