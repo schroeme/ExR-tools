@@ -1,3 +1,6 @@
+"""
+the Utils module offers a variety of utility functions designed to facilitate image processing tasks in the ExR-Tools package.
+"""
 import os
 import numpy as np
 from pathlib import Path
@@ -98,16 +101,18 @@ def subtract_background_top_hat(volume: np.ndarray,
 
 
 def calculate_volume_and_surface_area(labeled_image, label=1,spacing=[1,1,1]):
+    r"""
+    Calculates the volume and surface area of a specified object within a 3D labeled image.
+
+    :param labeled_image: A 3D array where different objects are distinguished by unique integer labels.
+    :type labeled_image: numpy.ndarray
+    :param label: The specific label of the object for which the volume and surface area are to be calculated.
+    :type label: int
+
+    :returns: A tuple containing two elements - the volume and the surface area of the specified object.
+    :rtype: tuple
     """
-    Calculate the volume and surface area of the object with the given label in the 3D labeled image.
-    
-    Parameters:
-        labeled_image (numpy.ndarray): 3D array where different objects are labeled with different integer values.
-        label (int): The label of the object for which to calculate volume and surface area.
-    
-    Returns:
-        tuple: (volume, surface_area)
-    """
+
     # Initialize volume and surface_area
     volume = 0
     surface_area = 0
