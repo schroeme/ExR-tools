@@ -1,3 +1,6 @@
+"""
+Alignment evaluation module is dedicated to assessing the quality of alignment between different rounds of volumetric microscopy images within a field of view (FOV). It leverages Normalized Cross-Correlation (NCC) to quantify alignment, offering a robust measure of similarity between the reference round and other rounds.
+"""
 import numpy as np
 from skimage.filters import threshold_otsu
 from scipy.fftpack import fftn, ifftn

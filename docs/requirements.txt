@@ -1,0 +1,6 @@
+numpy
+h5py
+nd2reader
+SimpleITK-SimpleElastix
+sphinx_rtd_theme
+git+https://github.com/JaneliaSciComp/bigstream.git

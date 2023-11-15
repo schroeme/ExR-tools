@@ -1,4 +1,6 @@
-
+"""
+The Puncta Analysis Module is designed to analyze expansion microscopy data, specifically to identify puncta—distinct fluorescent markers that indicate proteins at synapses. It offers tools for processing synapses either individually or in pairs across multiple rounds of analysis. This module focuses on mapping synapse coordinates to detect the presence of proteins and to explore the interactions between proteins and synapses.
+"""
 import os
 import json
 import h5py
@@ -21,12 +23,11 @@ def extract_synapse_coordinates(config: Config, roi: int) -> None:
     Extracts bounding cube coordinates from the synapses segmenation masks in a given Region of Interest (ROI) and saves them in a JSON file.
     `segmentation_masks` from <exr.segmentation.synapses_roi_segmentation> are reqiured.
 
-    param config: Configuration options. This should be an instance of the Config class.
+    :param config: Configuration options. This should be an instance of the Config class.
     :type config: Config
     :param roi: The ROI to analyze.
     :type roi: int
 
-    :raises: Raises an exception if an error occurs during the extraction of synapse coordinates.
     """
 
     try:
@@ -75,7 +76,7 @@ def measure_synapse_properties(config: Config,
     include volume, surface area, and aspect ratios of synapses. The function then saves the computed properties 
     in a JSON file.
 
-    param config: Configuration options. This should be an instance of the Config class.
+    :param config: Configuration options. This should be an instance of the Config class.
     :type config: Config
     :param roi: The Region Of Interest (ROI) to measure properties for.
     :type roi: int
@@ -249,11 +250,10 @@ def measure_synapse_properties_pairwise(config: Config,
     :param roi: The Region Of Interest (ROI) identifier for which the synapse properties are to be computed.
     :type roi: int
     :param round_channel_pairs: List of tuples where each tuple contains a round number and a channel identifier. 
-    The function computes pairwise statistics for each combination of round-channel pairs.
+        The function computes pairwise statistics for each combination of round-channel pairs.
     :type round_channel_pairs: List[Tuple[int, int]]
-    :param nonzero_threshold: Threshold for non-zero pixel fraction. Used to determine the validity of the synapse 
-    based on the amount of non-zero pixels in the image.
-    :type nonzero_threshold: float, default is 0.65
+    :param nonzero_threshold: Threshold for non-zero pixel fraction. Used to determine the validity of the synapse based on the amount of non-zero pixels in the image, default is 0.65.
+    :type nonzero_threshold: float
 
     :raises: Logs an error message if there's an issue during processing.
     """
