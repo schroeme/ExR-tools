@@ -169,7 +169,7 @@ def inspect_pairwise_analysis(config: Config, roi: int, pairwise_type: str = 'vo
         raise
 
 
-def plot_violin_for_property(config: Config, roi: int, selected_proteins: Dict[str, str], selected_property: str) -> None:
+def inspect_roi_property(config: Config, roi: int, selected_proteins: Dict[str, str], selected_property: str) -> None:
     r"""
     Generates a violin plot for a specified property across selected proteins for a given ROI.
 
