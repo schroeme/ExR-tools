@@ -329,7 +329,7 @@ def measure_synapse_properties_pairwise(config: Config,
         results_for_key = {}
 
         for i, round_channel_value_1 in enumerate(round_channel_pairs):
-            for round_channel_value_2 in round_channel_pairs[i+1:]:
+            for round_channel_value_2 in round_channel_pairs[i:]:
                 pair1 = f'{round_channel_value_1[0]}-{round_channel_value_1[1]}'
                 pair2 = f'{round_channel_value_2[0]}-{round_channel_value_2[1]}'
 
@@ -363,8 +363,8 @@ def measure_synapse_properties_pairwise(config: Config,
                         idx2, centroid2 = data[pair2]['puncta_prop'][puncta2]
 
                         # Calculate overlap
-                        overlap = len(np.intersect1d(idx1, idx2))
-                        frac_overlap = (overlap * 2) / (len(idx1) + len(idx2))
+                        puncta_overlap = len(np.intersect1d(idx1, idx2))
+                        frac_overlap = (puncta_overlap * 2) / (len(idx1) + len(idx2))
                         frac_overlaps.append(frac_overlap)
 
                         # Calculate inter-puncta distance
