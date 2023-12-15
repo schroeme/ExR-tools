@@ -25,7 +25,7 @@ def create_folder_structure(processed_dir: Path,rois:List[int], rounds: List[int
     roi_analysis_dir = processed_dir/ "roi_analysis"
     roi_analysis_dir.mkdir(parents=True, exist_ok=True)
 
-    roi_analysis = ['segmentation_masks','synapses_properties']
+    roi_analysis = ['segmentation_masks','synapses_properties','inspect_synapses']
     for dir in roi_analysis:
         roi_analysis_sub_dir = roi_analysis_dir / dir
         roi_analysis_sub_dir.mkdir(parents=True, exist_ok=True)
